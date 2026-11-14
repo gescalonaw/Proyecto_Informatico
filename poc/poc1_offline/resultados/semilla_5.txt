@@ -1,0 +1,4 @@
+N=1000 corridas · stock=5 · 3 terminales · corte<= 30 min · demanda media=9.0 intentos
+A Ingenua      violaciones= 643 ( 64.3 %) stock_min= -9  ventas_perdidas_media=0.00  corridas_con_perdida=  0.0 %  sobreventa_media=1.73
+B Cuota local  violaciones=   0 (  0.0 %) stock_min=  0  ventas_perdidas_media=0.12  corridas_con_perdida= 10.0 %  sobreventa_media=0.00
+C Solo online  violaciones=   0 (  0.0 %) stock_min=  0  ventas_perdidas_media=1.28  corridas_con_perdida= 55.5 %  sobreventa_media=0.00

@@ -1,0 +1,19 @@
+Totales con los pesos del equipo:
+   3.95  ALT-1 SaaS online-first + cuota
+   3.50  ALT-3 Instalable on-premise
+   3.05  ALT-4 Integrar Odoo
+   2.55  ALT-2 PWA local-first
+
+Cada peso ±10 pp (14 casos): el ganador no cambia.
+
+Con 10000 juegos de pesos al azar:
+    89.0 %  ALT-1 SaaS online-first + cuota
+    11.0 %  ALT-3 Instalable on-premise
+     0.0 %  ALT-2 PWA local-first
+     0.0 %  ALT-4 Integrar Odoo
+
+Cortes largos y frecuentes (C3=40, C2=5, C1=15): gana ALT-3 (3.86 vs 3.71)
+Sin plazo (C2=0): gana ALT-1 (3.94 vs 3.62)
+Costo pesa el doble (C1=40): gana ALT-1 (3.96 vs 3.75)
+Seguridad pesa el doble (C4=30): gana ALT-1 (3.96 vs 3.43)
+Sin comercializar (C7=0): gana ALT-1 (3.83 vs 3.67)
