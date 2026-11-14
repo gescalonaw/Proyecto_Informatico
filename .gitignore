@@ -1,0 +1,10 @@
+# Archivos temporales y de cada PC (el .gitignore de pos-prototipo cubre vendor/, .env, logs, etc.)
+*.tgz
+_temporal_*
+__pycache__/
+pos-prototipo/composer.phar
+pos-prototipo/.env.sqlite.bak
+pos-prototipo/database/*.sqlite
+pos-prototipo/bootstrap/cache/*.php
+# Corrida de carga invalida del 14/11 19:00 (53 % de errores 401 al recrear la base durante la prueba)
+poc/poc2_carga/resultados/resumen_20261114_1900.json
