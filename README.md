@@ -13,7 +13,6 @@ aislamiento por negocio (multi-tenant). Corre en **XAMPP** (Apache + MySQL/Maria
 | Herramienta | Para qué | Dónde |
 |---|---|---|
 | **XAMPP con PHP 8.4 o superior** | Apache, MySQL y PHP | [https://www.apachefriends.org](https://www.apachefriends.org/es/download.html) (la misma versión para todo el equipo) |
-| **Git** | Clonar y subir cambios | https://git-scm.com |
 | k6 (opcional) | Pruebas de carga y de la última unidad | `winget install k6 --source winget` |
 | Python 3 (opcional) | Scripts de las PoC | `winget install Python.Python.3.12` |
 
