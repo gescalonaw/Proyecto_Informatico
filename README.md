@@ -118,21 +118,5 @@ pos-multisede/
 └── 1_… 6_….bat               Instalación y verificación
 ```
 
-## 8. Problemas comunes
 
-| Síntoma | Causa | Solución |
-|---|---|---|
-| XAMPP: "Port 3306 in use by …MariaDB…" | Hay otro MySQL/MariaDB instalado como servicio | PowerShell como administrador: `Get-Service *maria*`, luego `Stop-Service MariaDB` y `Set-Service MariaDB -StartupType Manual` |
-| XAMPP: Apache no parte (puerto 80) | Skype, IIS u otro programa usa el puerto 80 | Cerrar ese programa, o cambiar el puerto de Apache en Config → httpd.conf |
-| "Unknown database 'laravel'" | Apache en Windows lee mal el `.env` con varias solicitudes a la vez | `C:\xampp\php\php.exe artisan config:cache` dentro de `pos-prototipo` |
-| POS: "Sin sedes disponibles" | La base se estaba recreando o falló `2_preparar_xampp.bat` | Esperar el "Listo" del script y recargar con Ctrl+F5 |
-| Pruebas de carga con "401 Sesión vencida" | Se recreó la base mientras corría la prueba | Volver a ejecutar la prueba (genera un token nuevo) |
-| `[FALTAN EXTENSIONES]` | Extensión desactivada en `C:\xampp\php\php.ini` | Quitar el `;` de `extension=NOMBRE`, guardar y reiniciar Apache |
-| `1_instalar.bat` avisa que tu PHP es menor a 8.4 | XAMPP más antiguo que el del equipo | Mejor instalar el mismo XAMPP; si no, no subir `composer.json` ni `composer.lock` |
 
-## 9. Limitaciones para la presentación
-
-- XAMPP trae **MariaDB**, compatible con MySQL pero no es MySQL 8 como dice el diseño.
-- Todo corre en un PC, no en el VPS de 2 vCPU/4 GB del SRS: anotar CPU y RAM con cada medición.
-- El historial de ventas del panel es **sintético**.
-- Los scripts de la PoC y parte del código se prepararon con ayuda de IA (Claude); declararlo en la plantilla de uso de IA del ramo.
