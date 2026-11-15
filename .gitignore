@@ -1,10 +1,24 @@
-# Archivos temporales y de cada PC (el .gitignore de pos-prototipo cubre vendor/, .env, logs, etc.)
+# Archivos temporales y de cada PC
 *.tgz
 _temporal_*
 __pycache__/
 pos-prototipo/composer.phar
 pos-prototipo/.env.sqlite.bak
 pos-prototipo/database/*.sqlite
-pos-prototipo/bootstrap/cache/*.php
+
+# Entorno local Laravel (pos-prototipo)
+pos-prototipo/.env
+pos-prototipo/.phpunit.result.cache
+pos-prototipo/vendor/
+pos-prototipo/bootstrap/cache/*
+!pos-prototipo/bootstrap/cache/.gitkeep
+pos-prototipo/storage/logs/*.log
+pos-prototipo/storage/framework/sessions/*
+!pos-prototipo/storage/framework/sessions/.gitkeep
+pos-prototipo/storage/framework/views/*
+!pos-prototipo/storage/framework/views/.gitkeep
+pos-prototipo/storage/framework/cache/data/*
+!pos-prototipo/storage/framework/cache/data/.gitkeep
+
 # Corrida de carga invalida del 14/11 19:00 (53 % de errores 401 al recrear la base durante la prueba)
 poc/poc2_carga/resultados/resumen_20261114_1900.json
