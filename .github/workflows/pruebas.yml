@@ -1,0 +1,44 @@
+# Integración continua del prototipo POS Multisede Web.
+# Ubicación en el repo: .github/workflows/pruebas.yml
+# En cada push y en cada pull request instala el proyecto en un servidor limpio de GitHub,
+# corre las pruebas automáticas (SQLite en memoria) y reporta la cobertura con PCOV.
+
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: pos-prototipo   # el proyecto Laravel está en esta subcarpeta
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar PHP 8.4 con PCOV (para la cobertura)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: pcov
+
+      - name: Crear las carpetas que Laravel necesita
+        # storage/ y bootstrap/cache/ no están en el repo; sin ellas la instalación falla.
+        run: mkdir -p bootstrap/cache storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs storage/app/public
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Preparar el archivo .env
+        run: |
+          cp .env.example .env 2>/dev/null || echo "APP_KEY=" > .env
+          php artisan key:generate
+
+      - name: Correr las pruebas con cobertura
+        run: php artisan test --coverage
