@@ -1,10 +1,20 @@
 # Modelo de colas (CI-1) · Aplicación de ciencias de la ingeniería
 
 ## Pregunta de diseño
-¿Cuántos workers necesita el servidor para cumplir RNF-R-1 y RNF-R-2 (p95 ≤ 300 ms y < 1 % de errores a 30 req/s)?
+¿Cuántos workers necesita el servidor para cumplir RNF-R-1 (p95 ≤ 300 ms al escanear un producto) con la carga de diseño?
+
+## Carga de diseño (supuestos S-0 a S-4, validados con extracto de PaVariar)
+| Paso | Cálculo | Resultado |
+|---|---|---|
+| Sedes | 200 negocios × 3 sedes (S-0) | 600 sedes |
+| Ventas al día | 600 × 30 ventas/sede (S-1) | 18.000 |
+| Solicitudes al día | 18.000 × 5 solicitudes por venta | 90.000 |
+| Promedio | 90.000 ÷ 36.000 s (10 h de atención) | 2,5 req/s |
+| Punta | × 3 (factor de punta) | 7,5 req/s |
+| Diseño | × 1,5 (margen) | **11,25 req/s** |
 
 ## Formulación
-Cola M/G/c: llegadas de Poisson (tasa λ = 30 req/s), c servidores idénticos (workers) y tiempo de servicio con media 1/μ y variabilidad cv.
+Cola M/G/c: llegadas de Poisson (tasa λ), c servidores idénticos (workers) y tiempo de servicio con media 1/μ y variabilidad cv.
 - Utilización: ρ = λ / (c·μ). Debe ser < 1 o la cola crece sin límite.
 - Probabilidad de esperar: fórmula Erlang C.
 - Espera en cola: Wq = Erlang C / (c·μ − λ) · (1 + cv²)/2 (Allen-Cunneen; con cv = 1 es el M/M/c exacto de la E2).
@@ -20,43 +30,50 @@ Cola M/G/c: llegadas de Poisson (tasa λ = 30 req/s), c servidores idénticos (w
 
 ## Procedimiento
 1. Medir con k6 (PoC-2) en XAMPP, sin recrear la base durante la corrida.
-2. Correr `python colas.py --json ..\poc2_carga\resultados\resumen_20261115_1717.json --sim` (con `--c N` si se conoce el número de workers).
+2. Correr `python colas.py --json ..\poc2_carga\resultados\resumen_20261115_1717.json --lam 11.25 --sim` (con `--c N` si se conoce el número de workers).
 3. Comparar el p95 predicho con el medido y decidir c.
 
 ## Verificación de la fórmula (hecha)
 La simulación de eventos discretos (200.000 solicitudes por caso, incluida con `--sim`) coincide con la fórmula.
-Con λ = 30, servicio 50 ms y cv = 1, 3 workers dan espera p95 de 51,8 ms (fórmula) contra 46,9 ms (simulación), y 4 workers dan 8,0 ms contra 7,1 ms.
+Con λ = 11,25 y el servicio medido, 1 worker da espera p95 de 14,9 ms (fórmula) contra 14,8 ms (simulación).
+
+## Medición (PoC-2, 15/11 17:17)
+Apache 2.4 + MariaDB 11.8 + PHP 8.5, Intel Core i5-12450HX, 7,6 GiB RAM.
+54.000 solicitudes a 30,0 req/s durante 30 min, 0,00 % de errores, media 17,2 ms, mediana 15,2 ms, p95 20,7 ms, p99 22,5 ms.
+Variabilidad estimada del servicio: cv = 0,19 (mucho más regular que el exponencial de la E2).
+
+**La prueba se hizo a 30 req/s, que es 2,7 veces la carga de diseño (11,25 req/s).** Es una prueba de estrés: si el RNF se cumple a 30 req/s, se cumple a 11,25.
+Se midió con la carga mayor antes de que el escenario se redimensionara de 80 a 30 ventas por sede.
 
 ## Resultados
-Medición válida (PoC-2, 15/11 17:17): Apache 2.4 + MariaDB 11.8 + PHP 8.5, Intel Core i5-12450HX, 7,6 GiB RAM.
-54.000 solicitudes a 30,0 req/s durante 30 min, 0,00 % de errores, media 17,2 ms, mediana 15,2 ms, p95 20,7 ms, p99 22,5 ms.
-Variabilidad estimada del servicio: cv = 0,19 (el tiempo de servicio es mucho más regular que el exponencial de la E2).
+Con el servicio medido (17,2 ms), p95 de la respuesta predicho:
 
-| c (workers) | Utilización | Espera p95 | p95 respuesta predicho | Simulado |
-|---|---|---|---|---|
-| 1 | 51,5 % | 42,7 ms | 63,4 ms | 55,8 ms |
-| 2 | 25,7 % | 4,5 ms | 25,2 ms | 25,5 ms |
-| 3 | 17,2 % | 0 ms | 20,7 ms | 23,1 ms |
-| 4 | 12,9 % | 0 ms | 20,7 ms | 22,9 ms |
+| c (workers) | A carga de diseño (11,25 req/s): utilización / p95 | A la carga de la prueba (30 req/s): utilización / p95 |
+|---|---|---|
+| 1 | 19 % / 35,6 ms | 51 % / 63,4 ms |
+| 2 | 10 % / 20,7 ms | 26 % / 25,2 ms |
+| 3 | 6 % / 20,7 ms | 17 % / 20,7 ms |
+| 4 | 5 % / 20,7 ms | 13 % / 20,7 ms |
 
-Contraste con la medición: el p95 medido (20,7 ms) es menor que lo que predice el modelo con 1 worker (63,4 ms) y con 2 (25,2 ms), así que el modelo es conservador.
+Contraste con la medición: a 30 req/s el p95 medido (20,7 ms) es menor que lo que predice el modelo con 1 worker (63,4 ms) y con 2 (25,2 ms), así que el modelo es conservador.
 Con 3 o más workers la espera es casi 0 y la predicción coincide con el servicio medido por construcción; esa parte no es evidencia independiente.
 
-Cambio respecto a la E2: se había supuesto 50 ms de servicio y se midieron 17,2 ms (3 veces menos). Con 50 ms, 2 workers daban p95 = 394 ms y no cumplían; con el servicio medido, 1 worker ya cumple (63 ms ≤ 300 ms).
+Cambios respecto a la E2: se había supuesto 50 ms de servicio y se midieron 17,2 ms (3 veces menos), y la carga de diseño quedó en 11,25 req/s. Con 50 ms y 11,25 req/s, 1 worker da p95 ≈ 416 ms y no cumple, y 2 workers dan 171 ms.
 
 Sensibilidad a la carga (p95 de respuesta predicho en ms; "inest." = la cola crece sin límite):
 
 | λ (req/s) | 1 worker | 2 workers | 3 workers | 4 workers |
 |---|---|---|---|---|
-| 30 (diseño) | 63 | 25 | 21 | 21 |
+| 11,25 (diseño) | 36 | 21 | 21 | 21 |
+| 30 (prueba) | 63 | 25 | 21 | 21 |
 | 60 | inest. | 39 | 24 | 21 |
 | 90 | inest. | 71 | 31 | 23 |
-| 120 | inest. | inest. | 42 | 27 |
 
 ## Efecto en el diseño
-La carga de diseño (30 req/s) está cubierta con 1 worker, pero ese worker se satura sobre ~58 req/s (1/17,2 ms).
-Se mantienen 4 workers: sostienen 4 veces la carga de diseño (120 req/s) con p95 ≈ 27 ms, y a 30 req/s la utilización es de 13 %, lo que deja holgura para las escrituras (ventas con bloqueo de fila), que no se midieron.
-Hay un solo punto lento en la corrida: el máximo fue 3.987 ms, con p99 = 22,5 ms. Es un único valor aislado entre 54.000 y no afecta al p95, pero hay que poder explicarlo si la comisión lo pregunta (por ejemplo, primera solicitud con caché frío).
+A 11,25 req/s, 1 worker ya cumple con p95 ≈ 36 ms (utilización de 19 %), pero un worker se satura sobre ~58 req/s y no tiene redundancia.
+Con 2 workers el p95 predicho es ≈ 21 ms, la utilización es de 10 % y se sostienen unos 5 veces la carga de diseño (hasta ~58 req/s con p95 ≈ 39 ms).
+Falta medir las escrituras (ventas con bloqueo de fila, RB-1), que tienen otro tiempo de servicio.
+Hay un solo punto lento en la corrida: el máximo fue 3.987 ms, con p99 = 22,5 ms. Es un único valor aislado entre 54.000 y no afecta al p95, pero hay que poder explicarlo (por ejemplo, primera solicitud con caché frío).
 
 ## Límites
 - k6 genera llegadas a ritmo fijo y las cajeras reales llegan al azar: lo medido sale mejor que el modelo.
