@@ -28,8 +28,7 @@ librerías extra.
 - **Límite:** simula la estrategia, no el sistema. Cuando exista el prototipo hay que probar la
   cuota sobre el código real.
 
-## 2. PoC-2 · ¿Aguanta 30 solicitudes por segundo con p95 ≤ 300 ms?
-
+## 2. PoC-2 · ¿Aguanta 11,25 req/s (carga de diseño) con p95 ≤ 300 ms?
 1. **Ensayo:** `2_poc2_ensayo_con_mock.bat` levanta un servidor FALSO (`mock_api.py`) y le aplica
    carga durante 1 minuto. Sirve solo para comprobar que k6 funciona; **ese número no es la PoC-2**.
 2. **Prueba real:** primero instala y levanta el prototipo con los archivos de la carpeta

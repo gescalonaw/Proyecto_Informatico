@@ -3,7 +3,7 @@
 //   k6 run carga.js                                   -> contra el mock local (http://localhost:8080)
 //   k6 run -e BASE_URL=http://localhost:8000 -e TOKEN=xxx -e SEDE=1 carga.js   -> contra el prototipo
 //   k6 run -e RATE=20 -e DURATION=2m carga.js         -> cambiar tasa y duración
-// Criterio del SRS (RNF-R-1, RNF-R-2): p95 <= 300 ms y errores < 1 % a 30 req/s sostenidos.
+// Criterio del SRS (RNF-R-1, RNF-R-2): p95 <= 300 ms y errores < 1 % a 11,25 req/s (carga de diseño); la prueba se corre a 30 req/s (2,7 veces) como margen.
 import http from 'k6/http';
 import { check } from 'k6';
 
