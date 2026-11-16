@@ -1,10 +1,11 @@
 """Modelo de colas para dimensionar workers (CI-1 del SRS) y compararlo con lo medido con k6.
 
 Uso:
-  python colas.py                              lambda=30 req/s, servicio=50 ms (supuesto, como en la E2)
-  python colas.py 30 42                        lambda=30, servicio medio=42 ms
-  python colas.py 30 42 0.6                    ... y variabilidad del servicio cv=0.6 (cv=1: exponencial)
+  python colas.py                              lambda=11,25 req/s (carga de diseno, S-0 a S-4), servicio=50 ms (supuesto)
+  python colas.py 11.25 17                     lambda=11,25, servicio medio=17 ms
+  python colas.py 11.25 17 0.2                 ... y variabilidad del servicio cv=0.2 (cv=1: exponencial)
   python colas.py --json resumen.json          lee el resumen de k6 (PoC-2) y compara modelo vs medido
+  python colas.py --json resumen.json --lam 11.25   ... ademas calcula con la carga de diseno
   python colas.py --json resumen.json --c 4    ... indicando con cuantos workers se midio
   python colas.py 30 42 0.6 --sim              agrega una simulacion para verificar la formula
 
@@ -83,7 +84,7 @@ def cv_desde_p95(mediana, p95):
 
 
 def tabla(lam, serv, cv, sim, cs=range(1, 9), serv_p95=None):
-    print(f"lambda = {lam:.1f} req/s · servicio medio = {serv:.1f} ms (mu = {1000/serv:.1f} req/s por worker) · cv = {cv:.2f}")
+    print(f"lambda = {lam:.2f} req/s · servicio medio = {serv:.1f} ms (mu = {1000/serv:.1f} req/s por worker) · cv = {cv:.2f}")
     cab = "workers  utilizacion  P(esperar)  espera_media  espera_p95  p95_respuesta"
     print(cab + ("   | simulado: esp_p95  resp_p95" if sim else ""))
     for c in cs:
@@ -100,10 +101,11 @@ def tabla(lam, serv, cv, sim, cs=range(1, 9), serv_p95=None):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('lam', nargs='?', type=float, default=30.0)
+    ap.add_argument('lam', nargs='?', type=float, default=11.25)
     ap.add_argument('serv_ms', nargs='?', type=float, default=50.0)
     ap.add_argument('cv', nargs='?', type=float, default=1.0)
     ap.add_argument('--json', help='resumen de k6 exportado con --summary-export')
+    ap.add_argument('--lam', type=float, dest='lam_diseno', help='carga de diseno (req/s) para calcular con el servicio medido')
     ap.add_argument('--c', type=int, help='workers con los que se hizo la medicion (para comparar)')
     ap.add_argument('--sim', action='store_true', help='agrega simulacion de eventos discretos')
     a = ap.parse_args()
@@ -122,6 +124,10 @@ def main():
               " esta corrida NO sirve para validar el modelo (revisar token / base de datos).")
     print(f"Variabilidad estimada del servicio (lognormal a partir de p95/mediana): cv = {cv:.2f}\n")
     # el tiempo de servicio es la media medida (con poca carga, respuesta ~ servicio)
+    if a.lam_diseno:
+        print(f"== CARGA DE DISENO ({a.lam_diseno:.2f} req/s) con el servicio medido ==")
+        tabla(a.lam_diseno, k['media'], cv, a.sim, serv_p95=k['p95'])
+        print(f"\n== CARGA DE LA PRUEBA ({k['lam']:.2f} req/s, {k['lam']/a.lam_diseno:.1f} veces la de diseno) ==")
     tabla(k['lam'], k['media'], cv, a.sim, serv_p95=k['p95'])
     if a.c:
         r = analitico(k['lam'], k['media'], cv, a.c, k['p95'])
