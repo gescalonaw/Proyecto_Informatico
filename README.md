@@ -88,7 +88,7 @@ Todos los comandos, dentro de `pos-prototipo`:
 
 | Qué | Comando | Resultado esperado |
 |---|---|---|
-| Pruebas automáticas (SQLite en memoria, no tocan la demo) | `php artisan test` | 37 pruebas pasan |
+| Pruebas automáticas (SQLite en memoria, no tocan la demo) | `php artisan test` | 115 pruebas pasan |
 | Token de cajera (8 h) | `php artisan poc:token` | Un texto largo |
 | Abrir la caja de una sede | `php artisan poc:caja 2` | "Caja … abierta en la sede 2" |
 | Ver o fijar el stock | `php artisan poc:stock 1 2` / `php artisan poc:stock 1 2 5` | Stock del producto 1 en la sede 2 |
